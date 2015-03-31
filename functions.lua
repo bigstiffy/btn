@@ -12,3 +12,5 @@ minetest.register_abm({
 })
 
 -- the actual functions
+
+--scaffold "consume" function
