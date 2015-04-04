@@ -49,24 +49,21 @@ minetest.register_node("btn:scaffold", {
 	description = 'better building',
 	tiles = {"btn_scaffold_top.png", "btn_scaffold_bottom.png", "btn_scaffold_side.png"},
 -- Build scaffolding upward from bottom, stops when obstructed by solid blocks. Scaffold is ignored.
--- Needs fix for infinite scaffold.
 		on_punch = function(pos, node, puncher, pointed_thing)
-		minetest.debug(puncher:get_wielded_item():get_count())
 		if puncher:get_wielded_item():get_name() == "btn:scaffold" then
-			pos.y = pos.y+1
-			minetest.debug("holding scaffold")
+			local itemstack = puncher:get_wielded_item() --set local variable that tells game 'itemstack' is the currently held stack in hotbar
 			local node = minetest.get_node(pos)
-			minetest.debug(node.name)
-			while node.name == "btn:scaffold" do
-				minetest.debug("found scaffold, moving up 1")
+			while node.name == "btn:scaffold" do --performs an upward search through scaffold to find node that does not match scaffold
 				pos.y = pos.y+1
 				node = minetest.get_node(pos)
-				minetest.debug(node.name)
-				if node.name == "default:air" then
-					minetest.debug("found air!")
-				end
 			end
-			minetest.place_node(pos, {name="btn:scaffold"})
+			minetest.place_node(pos, {name="btn:scaffold"}) --places node at 'pos' as if player was placing it, preventing non-buildable_to nodes from being destroyed
+			node = minetest.get_node(pos)			--update the node variable to reflect the last position it attemped "place_node"
+			--if the last position "place_node" attempted results in a scaffold, then update player's itemstack
+			if node.name == "btn:scaffold" then
+				itemstack:take_item() --simulates 'remove 1 item' from what is currently the itemstack without updating
+				puncher:set_wielded_item(itemstack) --updates the stack of the selected item in hotbar with result of previous simulation
+			end
 		end
 	end,
 	groups = {choppy=2, oddly_breakable_by_hand=3, flammable=5, attached_node=1},
